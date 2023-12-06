@@ -88,22 +88,22 @@ public class CounselServiceTest {
 	}
 
 	@Test
-	// 없는 아이디 조회를 요청했을 때 실패되는 테스트 케이스
+		// 없는 아이디 조회를 요청했을 때 실패되는 테스트 케이스
 	void Should_ThrowException_When_RequestNotExistCounselId() throws Exception {
-	    // given
+		// given
 		Long findId = 2L;
 
-	    // when
+		// when
 		when(counselRepository.findById(findId)).thenThrow(new BaseException(ResultType.SYSTEM_ERROR));
 
-	    // then
+		// then
 		Assertions.assertThrows(BaseException.class, () -> counselService.get(findId));
 
 	}
 
 	@Test
 	void Should_ReturnUpdatedResponseOfExistCounselEntity_WhenRequestUpdateExistCounselInfo() throws Exception {
-	    // given
+		// given
 		Long findId = 1L;
 
 		Counsel entity = Counsel.builder()
@@ -125,6 +125,25 @@ public class CounselServiceTest {
 		assertThat(actual.getCounselId()).isSameAs(findId);
 		assertThat(actual.getName()).isSameAs(request.getName());
 
+	}
+
+	@Test
+	void Should_DeletedCounselEntity_When_RequestDeleteExistCounselInfo() throws Exception {
+		// given
+		Long targetId = 1L;
+
+		Counsel entity = Counsel.builder()
+				.counselId(1L)
+				.build();
+
+		// when
+		when(counselRepository.save(any(Counsel.class))).thenReturn(entity);
+		when(counselRepository.findById(targetId)).thenReturn(Optional.ofNullable(entity));
+
+		counselService.delete(targetId);
+
+		// then
+		assertThat(entity.getIsDeleted()).isSameAs(true);
 
 	}
 }

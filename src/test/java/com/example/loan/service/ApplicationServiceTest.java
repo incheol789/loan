@@ -1,7 +1,6 @@
 package com.example.loan.service;
 
 import com.example.loan.domain.Application;
-import com.example.loan.dto.ApplicationDTO;
 import com.example.loan.dto.ApplicationDTO.Request;
 import com.example.loan.dto.ApplicationDTO.Response;
 import com.example.loan.repository.ApplicationRepository;
@@ -14,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,6 +56,71 @@ public class ApplicationServiceTest {
 		// then
 		assertThat(actual.getHopeAmount()).isSameAs(entity.getHopeAmount());
 		assertThat(actual.getName()).isSameAs(entity.getName());
+
+	}
+
+	@Test
+	void Should_ReturnResponseOfExistApplicationEntity_When_RequestExistApplicationId() throws Exception {
+		// given
+		Long findId = 1L;
+
+		Application entity = Application.builder()
+				.applicationId(1L)
+				.build();
+
+		// when
+		when(applicationRepository.findById(findId)).thenReturn(Optional.ofNullable(entity));
+
+		Response actual = applicationService.get(findId);
+
+		// then
+		assertThat(actual.getApplicationId()).isSameAs(findId);
+
+	}
+
+	@Test
+	void Should_ReturnUpdatedResponseOfExistApplicationEntity_When_RequestUpdatedExistApplicationInfo() throws Exception {
+		// given
+		Long findId = 1L;
+
+		Application entity = Application.builder()
+				.applicationId(1L)
+				.hopeAmount(BigDecimal.valueOf(50000000))
+				.build();
+
+		Request request = Request.builder()
+				.hopeAmount(BigDecimal.valueOf(5000000))
+				.build();
+
+		// when
+		when(applicationRepository.save(any(Application.class))).thenReturn(entity);
+		when(applicationRepository.findById(findId)).thenReturn(Optional.ofNullable(entity));
+
+		Response actual = applicationService.update(findId, request);
+
+		// then
+		assertThat(actual.getApplicationId()).isSameAs(findId);
+		assertThat(actual.getHopeAmount()).isSameAs(request.getHopeAmount());
+
+	}
+
+	@Test
+	void Should_DeletedApplicationEntity_When_RequestDeleteExistApplicationInfo() throws Exception {
+		// given
+		Long targetId = 1L;
+
+		Application entity = Application.builder()
+				.applicationId(1L)
+				.build();
+
+		// when
+		when(applicationRepository.save(any(Application.class))).thenReturn(entity);
+		when(applicationRepository.findById(targetId)).thenReturn(Optional.ofNullable(entity));
+
+		applicationService.delete(targetId);
+
+		// then
+		assertThat(entity.getIsDeleted()).isSameAs(true);
 
 	}
 
